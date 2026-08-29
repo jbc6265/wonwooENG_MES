@@ -30,7 +30,7 @@ const state = {
 
 const elements = {
   todayText: document.querySelector("#todayText"), orderRows: document.querySelector("#orderRows"), residueRows: document.querySelector("#residueRows"), resultRows: document.querySelector("#resultRows"),
-  selectedCount: document.querySelector("#selectedCount"), clearSelectionButton: document.querySelector("#clearSelectionButton"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
+  selectedCount: document.querySelector("#selectedCount"), clearSelectionButton: document.querySelector("#clearSelectionButton"), materialCount: document.querySelector("#materialCount"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
   ordersTab: document.querySelector("#ordersTab"), residueTab: document.querySelector("#residueTab"), resultsTab: document.querySelector("#resultsTab"), ordersView: document.querySelector("#ordersView"), residueView: document.querySelector("#residueView"), resultsView: document.querySelector("#resultsView"),
   currentCode: document.querySelector("#currentCode"), currentSpec: document.querySelector("#currentSpec"), currentSize: document.querySelector("#currentSize"), currentSource: document.querySelector("#currentSource"),
   queuePosition: document.querySelector("#queuePosition"), queueCount: document.querySelector("#queueCount"), nextCode: document.querySelector("#nextCode"), totalSelected: document.querySelector("#totalSelected"), completedCount: document.querySelector("#completedCount"),
@@ -183,6 +183,9 @@ function renderOrders() {
       <td><span class="source-mark ${order.source === "residue" ? "is-on" : "is-off"}">${order.source === "residue" ? "O" : "X"}</span></td>
     </tr>`;
   }).join("");
+
+  const totalQuantity = state.data.orders.reduce((sum, order) => sum + order.qty, 0);
+  elements.materialCount.textContent = String(totalQuantity);
 
 }
 
