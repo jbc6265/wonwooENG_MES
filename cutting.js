@@ -230,7 +230,7 @@ function renderDetail() {
   elements.nextCode.textContent = next ? next.materialCode : "다음 예정 자재 없음";
 
   if (!current) {
-    elements.currentCode.textContent = "작업지시를 선택하세요.";
+    elements.currentCode.textContent = "작업할 자재를 선택하세요";
     elements.currentSpec.textContent = "-";
     elements.currentSize.textContent = "-";
     elements.currentSource.textContent = "-";
@@ -305,7 +305,7 @@ function toggleSelection(id) {
   state.selectedIds.clear();
   state.selectedIds.add(id);
   renderAll();
-  setMessage("준비", "작업지시 1건이 선택되었습니다. 자재 절단을 누르세요.", "working");
+  setMessage("준비", "자재 1건이 선택되었습니다. 자재 절단을 누르세요.", "working");
 }
 
 function startCutting() {
@@ -547,7 +547,7 @@ elements.resetButton.addEventListener("click", () => {
   saveData();
   setTab("orders");
   updateFlow(1);
-  setMessage("초기화", "초기 작업지시 10건과 잔재 재고 3건을 복원하고 작업실적을 초기화했습니다.", "complete");
+  setMessage("초기화", "초기 자재 재고 10건과 잔재 재고 3건을 복원하고 작업실적을 초기화했습니다.", "complete");
   renderAll();
 });
 

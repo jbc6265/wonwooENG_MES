@@ -35,7 +35,7 @@
       <section class="flow-strip" aria-label="절단 작업 흐름">
         <div class="flow-step is-done" data-step="0"><span>1</span><strong>자재 입고</strong></div>
         <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
-        <div class="flow-step is-active" data-step="1"><span>2</span><strong>작업지시 선택</strong></div>
+        <div class="flow-step is-active" data-step="1"><span>2</span><strong>자재 선택</strong></div>
         <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
         <div class="flow-step" data-step="2"><span>3</span><strong>자재 절단</strong></div>
         <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
@@ -49,7 +49,7 @@
       <section class="work-panel">
         <div class="panel-toolbar">
           <div class="tabs" role="tablist" aria-label="자재 정보 보기">
-            <button class="tab-button is-active" id="ordersTab" type="button" role="tab" aria-selected="true" aria-controls="ordersView">작업지시</button>
+            <button class="tab-button is-active" id="ordersTab" type="button" role="tab" aria-selected="true" aria-controls="ordersView">자재 재고</button>
             <button class="tab-button" id="residueTab" type="button" role="tab" aria-selected="false" aria-controls="residueView">잔재 재고 <span id="residueCount">3</span></button>
             <button class="tab-button" id="resultsTab" type="button" role="tab" aria-selected="false" aria-controls="resultsView">작업실적 <span id="resultCount">0</span></button>
           </div>
@@ -90,7 +90,7 @@
         <div class="work-detail">
           <article class="detail-section current-material">
             <div class="detail-heading"><strong>현재 처리 자재</strong><span id="queuePosition">대기</span></div>
-            <p class="primary-value" id="currentCode">작업지시를 선택하세요.</p>
+            <p class="primary-value" id="currentCode">작업할 자재를 선택하세요</p>
             <dl>
               <div><dt>강종 / 두께</dt><dd id="currentSpec">-</dd></div>
               <div><dt>원자재 크기</dt><dd id="currentSize">-</dd></div>
@@ -117,7 +117,7 @@
       <footer class="operator-footer">
         <section class="status-message" aria-live="polite">
           <span id="messageType">대기</span>
-          <strong id="statusMessage">작업지시를 선택하거나 자재 입고를 진행하세요.</strong>
+          <strong id="statusMessage">작업할 자재를 선택하거나 자재 입고를 진행하세요.</strong>
         </section>
         <section class="action-grid">
           <button class="action-button receipt" id="receiptButton" type="button">자재 입고</button>
