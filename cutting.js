@@ -3,20 +3,20 @@ const STORAGE_KEY = "wonwoo-cutting-pop-v1";
 const initialOrders = [
   { id: "WO-001", receivedAt: "2026-08-30", steel: "SS400", supplier: "동국제강", thickness: 12, width: 2438, height: 6096, qty: 5, source: "sheet" },
   { id: "WO-002", receivedAt: "2026-08-30", steel: "SS400", supplier: "현대제철", thickness: 9, width: 1524, height: 6096, qty: 8, source: "sheet" },
-  { id: "WO-003", receivedAt: "2026-08-29", steel: "SM355", supplier: "포스코", thickness: 10, width: 1219, height: 2438, qty: 4, source: "residue" },
+  { id: "WO-003", receivedAt: "2026-08-29", steel: "SM355", supplier: "포스코", thickness: 10, width: 1219, height: 2438, qty: 4, source: "residue", residueId: "R-20260829-001" },
   { id: "WO-004", receivedAt: "2026-08-29", steel: "SM490", supplier: "포스코", thickness: 16, width: 2438, height: 6096, qty: 3, source: "sheet" },
   { id: "WO-005", receivedAt: "2026-08-28", steel: "SS400", supplier: "현대제철", thickness: 12, width: 1524, height: 3048, qty: 10, source: "sheet" },
-  { id: "WO-006", receivedAt: "2026-08-28", steel: "SS400", supplier: "세아제강", thickness: 8, width: 1000, height: 2000, qty: 1, source: "residue" },
+  { id: "WO-006", receivedAt: "2026-08-28", steel: "SS400", supplier: "세아제강", thickness: 8, width: 1000, height: 2000, qty: 1, source: "residue", residueId: "R-20260828-002" },
   { id: "WO-007", receivedAt: "2026-08-27", steel: "SM355", supplier: "동국제강", thickness: 10, width: 2438, height: 6096, qty: 4, source: "sheet" },
-  { id: "WO-008", receivedAt: "2026-08-27", steel: "SS400", supplier: "현대제철", thickness: 6, width: 914, height: 1829, qty: 2, source: "residue" },
+  { id: "WO-008", receivedAt: "2026-08-27", steel: "SS400", supplier: "현대제철", thickness: 6, width: 914, height: 1829, qty: 2, source: "residue", residueId: "R-20260827-003" },
   { id: "WO-009", receivedAt: "2026-08-26", steel: "SM490", supplier: "포스코", thickness: 16, width: 1524, height: 6096, qty: 6, source: "sheet" },
   { id: "WO-010", receivedAt: "2026-08-26", steel: "SS400", supplier: "동국제강", thickness: 9, width: 2438, height: 3048, qty: 12, source: "sheet" },
 ].map((order) => ({ ...order, materialCode: makeMaterialCode(order) }));
 
 const initialResidues = [
-  { id: "R-20260829-001", originalCode: "SM355-10T-2438x6096", steel: "SM355", thickness: 10, width: 1219, height: 2438, registeredAt: "2026-08-29", status: "가용" },
-  { id: "R-20260828-002", originalCode: "SS400-8T-2438x6096", steel: "SS400", thickness: 8, width: 1000, height: 2000, registeredAt: "2026-08-28", status: "가용" },
-  { id: "R-20260827-003", originalCode: "SS400-6T-1219x2438", steel: "SS400", thickness: 6, width: 914, height: 1829, registeredAt: "2026-08-27", status: "가용" },
+  { id: "R-20260829-001", originalCode: "SM355-10T-2438x6096", steel: "SM355", supplier: "포스코", thickness: 10, width: 1219, height: 2438, qty: 4, registeredAt: "2026-08-29", status: "가용" },
+  { id: "R-20260828-002", originalCode: "SS400-8T-2438x6096", steel: "SS400", supplier: "세아제강", thickness: 8, width: 1000, height: 2000, qty: 1, registeredAt: "2026-08-28", status: "가용" },
+  { id: "R-20260827-003", originalCode: "SS400-6T-1219x2438", steel: "SS400", supplier: "현대제철", thickness: 6, width: 914, height: 1829, qty: 2, registeredAt: "2026-08-27", status: "가용" },
 ];
 
 const state = {
@@ -30,7 +30,7 @@ const state = {
 
 const elements = {
   todayText: document.querySelector("#todayText"), orderRows: document.querySelector("#orderRows"), residueRows: document.querySelector("#residueRows"), resultRows: document.querySelector("#resultRows"),
-  selectAll: document.querySelector("#selectAll"), selectedCount: document.querySelector("#selectedCount"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
+  selectedCount: document.querySelector("#selectedCount"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
   ordersTab: document.querySelector("#ordersTab"), residueTab: document.querySelector("#residueTab"), resultsTab: document.querySelector("#resultsTab"), ordersView: document.querySelector("#ordersView"), residueView: document.querySelector("#residueView"), resultsView: document.querySelector("#resultsView"),
   currentCode: document.querySelector("#currentCode"), currentSpec: document.querySelector("#currentSpec"), currentSize: document.querySelector("#currentSize"), currentSource: document.querySelector("#currentSource"),
   queuePosition: document.querySelector("#queuePosition"), queueCount: document.querySelector("#queueCount"), nextCode: document.querySelector("#nextCode"), totalSelected: document.querySelector("#totalSelected"), completedCount: document.querySelector("#completedCount"),
@@ -43,22 +43,101 @@ const elements = {
 };
 
 function cloneInitialData() {
-  return { orders: initialOrders.map((item) => ({ ...item })), residues: initialResidues.map((item) => ({ ...item })), results: [], residueSequence: 3, resultSequence: 0 };
+  return synchronizeResidueInventory({ orders: initialOrders, residues: initialResidues, results: [], residueSequence: 3, resultSequence: 0 });
 }
 
 function makeMaterialCode(material) {
   return `${String(material.steel).toUpperCase()}-${Number(material.thickness)}T-${Number(material.width)}x${Number(material.height)}`;
 }
 
+function residueMatchesOrder(residue, order) {
+  return residue.steel === order.steel
+    && Number(residue.thickness) === Number(order.thickness)
+    && Number(residue.width) === Number(order.width)
+    && Number(residue.height) === Number(order.height);
+}
+
+function makeResidueOrder(residue) {
+  const order = {
+    id: `WO-${residue.id}`,
+    receivedAt: residue.registeredAt,
+    steel: residue.steel,
+    supplier: residue.supplier || "잔재 재고",
+    thickness: residue.thickness,
+    width: residue.width,
+    height: residue.height,
+    qty: residue.qty,
+    source: "residue",
+    residueId: residue.id,
+  };
+  return { ...order, materialCode: makeMaterialCode(order) };
+}
+
+function synchronizeResidueInventory(data) {
+  const orders = (data.orders || []).map((order) => ({ ...order }));
+  let residueSequence = Number.isInteger(data.residueSequence) ? data.residueSequence : 0;
+  const residues = (data.residues || []).map((residue) => {
+    const matchingOrder = orders.find((order) => order.source === "residue"
+      && (order.residueId === residue.id || residueMatchesOrder(residue, order)));
+    const fallbackQty = Number.isInteger(matchingOrder?.qty) ? Math.max(0, matchingOrder.qty) : 1;
+    const qty = Number.isInteger(residue.qty) ? Math.max(0, residue.qty) : fallbackQty;
+    return {
+      ...residue,
+      supplier: residue.supplier || matchingOrder?.supplier || "잔재 재고",
+      qty,
+      status: qty > 0 ? "가용" : "소진",
+    };
+  });
+
+  const linkedResidueIds = new Set();
+  orders.forEach((order) => {
+    if (order.source !== "residue") return;
+    let residue = residues.find((item) => item.id === order.residueId && !linkedResidueIds.has(item.id));
+    if (!residue) residue = residues.find((item) => !linkedResidueIds.has(item.id) && residueMatchesOrder(item, order));
+    if (!residue) {
+      residueSequence += 1;
+      residue = {
+        id: `R-${String(order.receivedAt).replaceAll("-", "")}-${String(residueSequence).padStart(3, "0")}`,
+        originalCode: order.materialCode,
+        steel: order.steel,
+        supplier: order.supplier,
+        thickness: order.thickness,
+        width: order.width,
+        height: order.height,
+        qty: Math.max(0, Number(order.qty) || 0),
+        registeredAt: order.receivedAt,
+        status: order.qty > 0 ? "가용" : "소진",
+      };
+      residues.push(residue);
+    }
+    order.residueId = residue.id;
+    order.qty = residue.qty;
+    linkedResidueIds.add(residue.id);
+  });
+
+  residues.forEach((residue) => {
+    if (!linkedResidueIds.has(residue.id)) orders.unshift(makeResidueOrder(residue));
+  });
+
+  return {
+    ...data,
+    orders,
+    residues,
+    results: Array.isArray(data.results) ? data.results : [],
+    residueSequence,
+    resultSequence: Number.isInteger(data.resultSequence) ? data.resultSequence : 0,
+  };
+}
+
 function loadData() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Array.isArray(saved.orders) && Array.isArray(saved.residues) && Number.isInteger(saved.residueSequence)) {
-      return {
+      return synchronizeResidueInventory({
         ...saved,
         results: Array.isArray(saved.results) ? saved.results : [],
         resultSequence: Number.isInteger(saved.resultSequence) ? saved.resultSequence : 0,
-      };
+      });
     }
   } catch (error) {
     console.warn("저장 데이터를 불러오지 못해 초기 데이터로 시작합니다.", error);
@@ -67,6 +146,7 @@ function loadData() {
 }
 
 function saveData() {
+  state.data = synchronizeResidueInventory(state.data);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
 }
 
@@ -96,28 +176,24 @@ function renderOrders() {
     const selected = state.selectedIds.has(order.id);
     const empty = order.qty <= 0;
     return `<tr data-id="${escapeHtml(order.id)}" class="${selected ? "is-selected" : ""} ${empty ? "is-empty" : ""}">
-      <td><input type="checkbox" aria-label="${escapeHtml(order.materialCode)} 선택" ${selected ? "checked" : ""} ${empty || state.phase !== "select" ? "disabled" : ""}></td>
-      <td>${escapeHtml(order.receivedAt)}</td><td>${escapeHtml(order.materialCode)}</td><td>${escapeHtml(order.steel)}</td><td>${escapeHtml(order.supplier)}</td>
+      <td><input type="radio" name="workOrderSelection" aria-label="${escapeHtml(order.materialCode)} 선택" ${selected ? "checked" : ""} ${empty || state.phase !== "select" ? "disabled" : ""}></td>
+      <td>${escapeHtml(order.receivedAt)}</td><td>${escapeHtml(order.supplier)}</td><td>${escapeHtml(order.materialCode)}</td><td>${escapeHtml(order.steel)}</td>
       <td>${order.thickness}T</td><td>${order.width.toLocaleString()} × ${order.height.toLocaleString()}</td><td>${order.qty}장</td>
       <td><span class="source-mark ${order.source === "sheet" ? "is-on" : "is-off"}">${order.source === "sheet" ? "O" : "X"}</span></td>
       <td><span class="source-mark ${order.source === "residue" ? "is-on" : "is-off"}">${order.source === "residue" ? "O" : "X"}</span></td>
     </tr>`;
   }).join("");
 
-  const selectableIds = state.data.orders.filter((order) => order.qty > 0).map((order) => order.id);
-  const selectedSelectable = selectableIds.filter((id) => state.selectedIds.has(id)).length;
-  elements.selectAll.disabled = state.phase !== "select" || selectableIds.length === 0;
-  elements.selectAll.checked = selectableIds.length > 0 && selectedSelectable === selectableIds.length;
-  elements.selectAll.indeterminate = selectedSelectable > 0 && selectedSelectable < selectableIds.length;
 }
 
 function renderResidues() {
   elements.residueRows.innerHTML = state.data.residues.map((residue) => `<tr>
     <td>${escapeHtml(residue.id)}</td><td>${escapeHtml(residue.originalCode)}</td><td>${escapeHtml(residue.steel)}</td>
-    <td>${residue.thickness}T</td><td>${residue.width.toLocaleString()} × ${residue.height.toLocaleString()}</td><td>${escapeHtml(residue.registeredAt)}</td>
-    <td><span class="stock-status">${escapeHtml(residue.status)}</span></td>
+    <td>${residue.thickness}T</td><td>${residue.width.toLocaleString()} × ${residue.height.toLocaleString()}</td><td>${residue.qty.toLocaleString()}개</td><td>${escapeHtml(residue.registeredAt)}</td>
+    <td><span class="stock-status ${residue.qty > 0 ? "" : "is-empty"}">${escapeHtml(residue.status)}</span></td>
   </tr>`).join("");
-  elements.residueCount.textContent = String(state.data.residues.length);
+  const totalQuantity = state.data.residues.reduce((sum, residue) => sum + residue.qty, 0);
+  elements.residueCount.textContent = String(totalQuantity);
 }
 
 function renderResults() {
@@ -226,10 +302,10 @@ function toggleSelection(id) {
   if (state.phase !== "select") return;
   const order = state.data.orders.find((item) => item.id === id);
   if (!order || order.qty <= 0) return;
-  if (state.selectedIds.has(id)) state.selectedIds.delete(id); else state.selectedIds.add(id);
+  state.selectedIds.clear();
+  state.selectedIds.add(id);
   renderAll();
-  if (state.selectedIds.size) setMessage("준비", `${state.selectedIds.size}건의 작업지시가 선택되었습니다. 자재 절단을 누르세요.`, "working");
-  else setMessage("대기", "작업지시를 선택하거나 자재 입고를 진행하세요.");
+  setMessage("준비", "작업지시 1건이 선택되었습니다. 자재 절단을 누르세요.", "working");
 }
 
 function startCutting() {
@@ -247,7 +323,17 @@ function completeCutting() {
 
   state.queue.forEach((queued) => {
     const order = state.data.orders.find((item) => item.id === queued.id);
-    if (order && order.qty > 0) order.qty -= 1;
+    if (!order || order.qty <= 0) return;
+    if (order.source === "residue") {
+      const residue = state.data.residues.find((item) => item.id === order.residueId);
+      if (residue && residue.qty > 0) {
+        residue.qty -= 1;
+        residue.status = residue.qty > 0 ? "가용" : "소진";
+        order.qty = residue.qty;
+      }
+      return;
+    }
+    order.qty -= 1;
   });
   saveData();
   state.queueIndex = 0;
@@ -304,16 +390,20 @@ function confirmResidue() {
   }
   const current = getCurrentMaterial();
   state.data.residueSequence += 1;
-  state.data.residues.unshift({
+  const residue = {
     id: `R-${formatDateKey()}-${String(state.data.residueSequence).padStart(3, "0")}`,
     originalCode: current.materialCode,
     steel: current.steel,
+    supplier: current.supplier,
     thickness: current.thickness,
     width: size.width,
     height: size.height,
+    qty: 1,
     registeredAt: formatIsoDate(),
     status: "가용",
-  });
+  };
+  state.data.residues.unshift(residue);
+  state.data.orders.unshift(makeResidueOrder(residue));
   saveData();
   elements.residueSizeDialog.close();
   advanceQueue(true);
@@ -381,23 +471,15 @@ elements.residueTab.addEventListener("click", () => setTab("residues"));
 elements.resultsTab.addEventListener("click", () => setTab("results"));
 
 elements.orderRows.addEventListener("change", (event) => {
-  if (!event.target.matches('input[type="checkbox"]')) return;
+  if (!event.target.matches('input[type="radio"]')) return;
   const row = event.target.closest("tr");
   if (row) toggleSelection(row.dataset.id);
 });
 
 elements.orderRows.addEventListener("click", (event) => {
-  if (event.target.closest('input[type="checkbox"]')) return;
+  if (event.target.closest('input[type="radio"]')) return;
   const row = event.target.closest("tr");
   if (row) toggleSelection(row.dataset.id);
-});
-
-elements.selectAll.addEventListener("change", () => {
-  if (state.phase !== "select") return;
-  state.selectedIds.clear();
-  if (elements.selectAll.checked) state.data.orders.filter((order) => order.qty > 0).forEach((order) => state.selectedIds.add(order.id));
-  renderAll();
-  setMessage("준비", elements.selectAll.checked ? `${state.selectedIds.size}건의 작업지시가 선택되었습니다.` : "작업지시 선택이 해제되었습니다.", elements.selectAll.checked ? "working" : "");
 });
 
 elements.cutButton.addEventListener("click", startCutting);

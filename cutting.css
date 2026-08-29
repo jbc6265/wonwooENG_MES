@@ -76,13 +76,14 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .material-table tbody tr.is-empty { color: #98a2ad; cursor: not-allowed; }
 .check-column { width: 60px; }
 .code-column { width: 235px; }
-.material-table input[type="checkbox"] { accent-color: var(--blue); height: 24px; width: 24px; }
+.material-table input[type="radio"] { accent-color: var(--blue); height: 24px; width: 24px; }
 .source-mark { align-items: center; border-radius: 999px; display: inline-flex; font-size: 13px; font-weight: 900; height: 27px; justify-content: center; min-width: 38px; padding: 0 8px; }
 .source-mark.is-on { background: #e4f4e9; color: var(--green-2); }
 .source-mark.is-off { background: #eef1f4; color: #7b8794; }
-.residue-table { min-width: 980px; }
+.residue-table { min-width: 1080px; }
 .residue-table td:first-child { color: var(--blue); font-weight: 900; }
 .stock-status { color: var(--green); font-weight: 900; }
+.stock-status.is-empty { color: var(--red); }
 .result-table { min-width: 1240px; }
 .result-table td:first-child { color: var(--blue); font-weight: 900; }
 .result-status { background: #e9edf2; border-radius: 4px; color: #3e4a59; display: inline-block; font-size: 13px; font-weight: 900; padding: 5px 9px; }
