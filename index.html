@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>원우ENG MES POP - 공정 선택</title>
     <link rel="stylesheet" href="./process-select.css" />
+    <link rel="stylesheet" href="./operator.css" />
   </head>
   <body>
     <main class="process-shell">
@@ -15,7 +16,7 @@
         </div>
         <h1>원우ENG MES POP</h1>
         <div class="header-info">
-          <span id="todayText">오늘 날짜</span><i aria-hidden="true"></i><span>작업자&nbsp; 조병철</span>
+          <span id="todayText">오늘 날짜</span><i aria-hidden="true"></i><span>작업자&nbsp; <b data-operator-name>조병철</b></span>
         </div>
       </header>
 
@@ -49,6 +50,7 @@
         <time id="clockText">--:--:--</time>
       </footer>
     </main>
+    <script src="./operator.js"></script>
     <script src="./process-select.js"></script>
   </body>
 </html>

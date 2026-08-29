@@ -334,7 +334,7 @@ function registerNoResidueResult() {
     height: current.height,
     source: current.source,
     result: "잔재 미처리",
-    operator: "조병철",
+    operator: window.getCurrentOperator?.() || "조병철",
   });
   saveData();
 }

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MES POP - 최종검사 무게 I/F</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./operator.css" />
   </head>
   <body>
     <main class="pop-shell">
@@ -19,10 +20,16 @@
             <p class="system-label">MES POP</p>
             <h1>굴착기 카운터웨이트 최종검사</h1>
           </div>
-          <a class="process-back" href="./index.html" aria-label="공정 선택 화면으로 이동">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-            공정 선택
-          </a>
+          <div class="header-actions">
+            <button class="operator-select-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10" /></svg>
+              작업자 선택
+            </button>
+            <a class="process-back" href="./index.html" aria-label="공정 선택 화면으로 이동">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+              공정 선택
+            </a>
+          </div>
         </section>
         <section class="header-facts" aria-label="작업 기본 정보">
           <article>
@@ -35,7 +42,7 @@
           </article>
           <article>
             <span>작업자</span>
-            <strong>조병철</strong>
+            <strong data-operator-name>조병철</strong>
           </article>
         </section>
       </header>
@@ -160,6 +167,7 @@
       </footer>
     </main>
 
+    <script src="./operator.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

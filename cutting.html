@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MES POP - 원우ENG 절단 공정</title>
     <link rel="stylesheet" href="./cutting.css" />
+    <link rel="stylesheet" href="./operator.css" />
   </head>
   <body>
     <main class="cutting-shell">
@@ -19,7 +20,11 @@
           <i aria-hidden="true"></i>
           <span>공정명 <b>절단</b></span>
           <i aria-hidden="true"></i>
-          <span>작업자 <b>조병철</b></span>
+          <span>작업자 <b data-operator-name>조병철</b></span>
+          <button class="operator-select-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10" /></svg>
+            작업자 선택
+          </button>
           <a href="./index.html" class="back-button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
             공정 선택
@@ -179,6 +184,7 @@
       </div>
     </dialog>
 
+    <script src="./operator.js"></script>
     <script src="./cutting.js"></script>
   </body>
 </html>
