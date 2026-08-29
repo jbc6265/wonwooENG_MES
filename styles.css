@@ -80,6 +80,38 @@ button:disabled {
   padding: 22px 28px;
 }
 
+.process-back {
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.76);
+  border-radius: 8px;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 900;
+  gap: 6px;
+  margin-left: auto;
+  min-height: 50px;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.process-back:hover,
+.process-back:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  outline: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.process-back svg {
+  fill: none;
+  height: 24px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+  width: 24px;
+}
+
 .brand-icon {
   border: 3px solid rgba(255, 255, 255, 0.88);
   border-radius: 8px;
@@ -586,6 +618,10 @@ dd {
   .header-facts article {
     border-left: 0;
     border-top: 1px solid var(--line);
+  }
+
+  .process-back {
+    margin-left: auto;
   }
 
   .status-strip {

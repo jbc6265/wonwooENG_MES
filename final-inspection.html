@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MES POP - 최종검사 무게 I/F</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="pop-shell">
+      <header class="top-bar">
+        <section class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <span class="boom"></span>
+            <span class="body"></span>
+            <span class="track"></span>
+          </div>
+          <div>
+            <p class="system-label">MES POP</p>
+            <h1>굴착기 카운터웨이트 최종검사</h1>
+          </div>
+          <a class="process-back" href="./index.html" aria-label="공정 선택 화면으로 이동">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            공정 선택
+          </a>
+        </section>
+        <section class="header-facts" aria-label="작업 기본 정보">
+          <article>
+            <span>오늘 날짜</span>
+            <strong id="todayText">2026-07-09 (목)</strong>
+          </article>
+          <article>
+            <span>공정명</span>
+            <strong>최종검사</strong>
+          </article>
+          <article>
+            <span>작업자</span>
+            <strong>조병철</strong>
+          </article>
+        </section>
+      </header>
+
+      <section class="status-strip" aria-label="작업 진행 단계">
+        <div class="step is-active" data-step="select">
+          <span>1</span>
+          <strong>작업지시 선택</strong>
+        </div>
+        <div class="step" data-step="start">
+          <span>2</span>
+          <strong>작업시작</strong>
+        </div>
+        <div class="step" data-step="interface">
+          <span>3</span>
+          <strong>무게 자동 I/F</strong>
+        </div>
+        <div class="step" data-step="confirm">
+          <span>4</span>
+          <strong>무게 확정</strong>
+        </div>
+        <div class="step" data-step="end">
+          <span>5</span>
+          <strong>작업종료</strong>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section class="work-orders" aria-labelledby="workOrderTitle">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">1</span>
+              <h2 id="workOrderTitle">작업지시 목록</h2>
+            </div>
+            <button class="ghost-button" id="refreshButton" type="button">새로고침</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>선택</th>
+                  <th>품번</th>
+                  <th>수량</th>
+                  <th>모델</th>
+                  <th>생산번호</th>
+                </tr>
+              </thead>
+              <tbody id="orderRows"></tbody>
+            </table>
+          </div>
+
+          <div class="selected-summary">
+            <span>선택 작업지시</span>
+            <strong id="selectedOrderText">작업지시를 선택하세요</strong>
+          </div>
+        </section>
+
+        <section class="scale-panel" aria-labelledby="scalePanelTitle">
+          <div class="section-heading">
+            <div>
+              <span class="section-number">2</span>
+              <h2 id="scalePanelTitle">무게 자동 I/F 및 확정</h2>
+            </div>
+            <button class="if-button" id="interfaceButton" type="button" disabled>
+              무게 자동 I/F
+            </button>
+          </div>
+
+          <div class="device-row">
+            <div>
+              <span>디지털저울</span>
+              <strong><i class="dot"></i>연결됨</strong>
+            </div>
+            <div>
+              <span>장비번호</span>
+              <strong>DS-01</strong>
+            </div>
+            <div>
+              <span>최근 측정시간</span>
+              <strong id="measuredAt">-</strong>
+            </div>
+          </div>
+
+          <div class="weight-grid">
+            <article class="weight-display">
+              <span>측정 무게</span>
+              <div><strong id="weightValue">----</strong><em>kg</em></div>
+              <p id="stabilityText">작업시작 후 I/F 버튼을 누르세요.</p>
+            </article>
+            <article class="spec-card">
+              <span>기준 무게</span>
+              <strong id="targetWeight">- kg</strong>
+              <dl>
+                <div>
+                  <dt>허용 오차</dt>
+                  <dd>± 30 kg</dd>
+                </div>
+                <div>
+                  <dt>판정</dt>
+                  <dd id="judgeText">대기</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+
+          <button class="confirm-button" id="confirmButton" type="button" disabled>
+            무게 확정
+          </button>
+        </section>
+      </section>
+
+      <footer class="control-bar">
+        <section class="operator-actions">
+          <button class="start-button" id="startButton" type="button" disabled>작업시작</button>
+          <button class="end-button" id="endButton" type="button" disabled>작업종료</button>
+        </section>
+        <section class="message-panel" aria-live="polite">
+          <span id="messageType">대기</span>
+          <strong id="statusMessage">작업지시를 선택하면 작업을 시작할 수 있습니다.</strong>
+        </section>
+      </footer>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

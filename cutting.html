@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MES POP - 원우ENG 절단 공정</title>
+    <link rel="stylesheet" href="./cutting.css" />
+  </head>
+  <body>
+    <main class="cutting-shell">
+      <header class="cutting-header">
+        <div class="header-title">
+          <span>MES POP</span>
+          <i aria-hidden="true"></i>
+          <h1>원우ENG 절단 공정</h1>
+        </div>
+        <div class="header-facts" aria-label="작업 기본 정보">
+          <strong id="todayText">오늘 날짜</strong>
+          <i aria-hidden="true"></i>
+          <span>공정명 <b>절단</b></span>
+          <i aria-hidden="true"></i>
+          <span>작업자 <b>조병철</b></span>
+          <a href="./index.html" class="back-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            공정 선택
+          </a>
+        </div>
+      </header>
+
+      <section class="flow-strip" aria-label="절단 작업 흐름">
+        <div class="flow-step is-done" data-step="0"><span>1</span><strong>자재 입고</strong></div>
+        <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        <div class="flow-step is-active" data-step="1"><span>2</span><strong>작업지시 선택</strong></div>
+        <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        <div class="flow-step" data-step="2"><span>3</span><strong>자재 절단</strong></div>
+        <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        <div class="flow-step" data-step="3"><span>4</span><strong>절단 완료</strong></div>
+        <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        <div class="flow-step" data-step="4"><span>5</span><strong>잔재 처리 여부</strong></div>
+        <svg class="flow-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        <div class="flow-step" data-step="5"><span>6</span><strong>잔재 확정</strong></div>
+      </section>
+
+      <section class="work-panel">
+        <div class="panel-toolbar">
+          <div class="tabs" role="tablist" aria-label="자재 정보 보기">
+            <button class="tab-button is-active" id="ordersTab" type="button" role="tab" aria-selected="true" aria-controls="ordersView">작업지시</button>
+            <button class="tab-button" id="residueTab" type="button" role="tab" aria-selected="false" aria-controls="residueView">잔재 재고 <span id="residueCount">3</span></button>
+            <button class="tab-button" id="resultsTab" type="button" role="tab" aria-selected="false" aria-controls="resultsView">작업실적 <span id="resultCount">0</span></button>
+          </div>
+          <div class="toolbar-summary"><strong id="selectedCount">선택 0건</strong><span>복수 선택 가능</span></div>
+          <button class="utility-button" id="resetButton" type="button" title="초기 더미 데이터로 복원">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0 0 11.6 2.6L20 14M4 10l2.9-3.6A7 7 0 0 1 18.5 9" /></svg>
+            데이터 초기화
+          </button>
+        </div>
+
+        <div class="table-view" id="ordersView" role="tabpanel" aria-labelledby="ordersTab">
+          <table class="material-table">
+            <thead>
+              <tr>
+                <th class="check-column"><input id="selectAll" type="checkbox" aria-label="전체 작업지시 선택" /></th>
+                <th>입고일</th><th class="code-column">자재코드</th><th>강종</th><th>업체명</th>
+                <th>두께</th><th>가로×세로</th><th>수량</th><th>원장</th><th>잔재</th>
+              </tr>
+            </thead>
+            <tbody id="orderRows"></tbody>
+          </table>
+        </div>
+
+        <div class="table-view" id="residueView" role="tabpanel" aria-labelledby="residueTab" hidden>
+          <table class="material-table residue-table">
+            <thead><tr><th>잔재번호</th><th class="code-column">원자재코드</th><th>강종</th><th>두께</th><th>가로×세로</th><th>등록일</th><th>상태</th></tr></thead>
+            <tbody id="residueRows"></tbody>
+          </table>
+        </div>
+
+        <div class="table-view" id="resultsView" role="tabpanel" aria-labelledby="resultsTab" hidden>
+          <table class="material-table result-table">
+            <thead><tr><th>실적번호</th><th>완료일시</th><th class="code-column">자재코드</th><th>강종</th><th>두께</th><th>원자재 크기</th><th>투입 구분</th><th>처리결과</th><th>작업자</th></tr></thead>
+            <tbody id="resultRows"></tbody>
+          </table>
+        </div>
+
+        <div class="work-detail">
+          <article class="detail-section current-material">
+            <div class="detail-heading"><strong>현재 처리 자재</strong><span id="queuePosition">대기</span></div>
+            <p class="primary-value" id="currentCode">작업지시를 선택하세요.</p>
+            <dl>
+              <div><dt>강종 / 두께</dt><dd id="currentSpec">-</dd></div>
+              <div><dt>원자재 크기</dt><dd id="currentSize">-</dd></div>
+              <div><dt>투입 구분</dt><dd id="currentSource">-</dd></div>
+            </dl>
+          </article>
+
+          <article class="detail-section residue-entry" id="residueEntry">
+            <div class="detail-heading"><strong>잔재 처리 상태</strong><span>POPUP</span></div>
+            <div class="residue-ready"><strong id="residueStatus">처리 대기</strong><p id="inputGuide">잔재 처리 선택 시 팝업에서 크기를 입력합니다.</p></div>
+          </article>
+
+          <article class="detail-section queue-section">
+            <div class="detail-heading"><strong>처리 대기열</strong><span id="queueCount">0건</span></div>
+            <p class="primary-value" id="nextCode">다음 예정 자재 없음</p>
+            <dl>
+              <div><dt>선택 건수</dt><dd id="totalSelected">0건</dd></div>
+              <div><dt>완료 건수</dt><dd id="completedCount">0건</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <footer class="operator-footer">
+        <section class="status-message" aria-live="polite">
+          <span id="messageType">대기</span>
+          <strong id="statusMessage">작업지시를 선택하거나 자재 입고를 진행하세요.</strong>
+        </section>
+        <section class="action-grid">
+          <button class="action-button receipt" id="receiptButton" type="button">자재 입고</button>
+          <button class="action-button cut" id="cutButton" type="button" disabled>자재 절단</button>
+          <button class="action-button complete" id="completeButton" type="button" disabled>절단 완료</button>
+          <button class="action-button residue" id="residueProcessButton" type="button" disabled>잔재 처리</button>
+          <button class="action-button discard" id="noResidueButton" type="button" disabled>잔재 미처리</button>
+        </section>
+      </footer>
+    </main>
+
+    <dialog class="receipt-dialog" id="receiptDialog" aria-labelledby="receiptTitle">
+      <form method="dialog" id="receiptForm">
+        <div class="dialog-header">
+          <div><span>자재 입고 등록</span><h2 id="receiptTitle">신규 원장 정보</h2></div>
+          <button class="close-button" value="cancel" type="submit" formnovalidate aria-label="입고 등록 창 닫기">×</button>
+        </div>
+        <div class="form-grid">
+          <label>강종<select id="steelInput" required><option value="SS400">SS400</option><option value="SM355">SM355</option><option value="SM490">SM490</option></select></label>
+          <label>업체명<input id="supplierInput" type="text" value="포스코" required /></label>
+          <label>두께(mm)<input id="thicknessInput" type="number" min="1" value="12" required /></label>
+          <label>가로(mm)<input id="widthInput" type="number" min="1" value="2438" required /></label>
+          <label>세로(mm)<input id="heightInput" type="number" min="1" value="6096" required /></label>
+          <label>수량(장)<input id="quantityInput" type="number" min="1" value="1" required /></label>
+        </div>
+        <div class="code-preview"><span>자동 생성 자재코드</span><strong id="codePreview">SS400-12T-2438x6096</strong></div>
+        <div class="dialog-actions">
+          <button class="dialog-cancel" value="cancel" type="submit" formnovalidate>취소</button>
+          <button class="dialog-confirm" id="saveReceiptButton" value="default" type="submit">입고 등록</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="action-dialog no-residue-dialog" id="noResidueDialog" aria-labelledby="noResidueTitle">
+      <div class="confirm-dialog-body">
+        <span class="dialog-symbol" aria-hidden="true">!</span>
+        <h2 id="noResidueTitle">잔재 미처리 확인</h2>
+        <p>잔재로 처리하지 않고 절단을 완료하시겠습니까?</p>
+        <strong id="noResidueCode">-</strong>
+        <div class="decision-actions">
+          <button class="yes-button" id="confirmNoResidueButton" type="button">예 (절단완료)</button>
+          <button class="no-button" id="changeToResidueButton" type="button">아니요 (잔재처리)</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="action-dialog residue-size-dialog" id="residueSizeDialog" aria-labelledby="residueDialogTitle">
+      <div class="dialog-header">
+        <div><span>잔재 재고 등록</span><h2 id="residueDialogTitle">잔재 크기 입력</h2></div>
+        <button class="close-button" id="closeResidueDialog" type="button" aria-label="잔재 크기 입력 창 닫기">×</button>
+      </div>
+      <div class="residue-source-summary">
+        <span>현재 처리 자재</span><strong id="residueDialogCode">-</strong><p id="residueDialogSourceSize">원자재 크기 -</p>
+      </div>
+      <div class="popup-dimension-inputs">
+        <label>잔재 가로(mm)<input id="residueWidth" type="number" min="1" inputmode="numeric" placeholder="가로 길이" /></label>
+        <span aria-hidden="true">×</span>
+        <label>잔재 세로(mm)<input id="residueHeight" type="number" min="1" inputmode="numeric" placeholder="세로 길이" /></label>
+      </div>
+      <p class="popup-guide" id="popupInputGuide">원자재보다 작은 잔재 가로·세로 길이를 입력하세요.</p>
+      <div class="dialog-actions">
+        <button class="dialog-cancel" id="cancelResidueButton" type="button">취소</button>
+        <button class="dialog-confirm" id="residueConfirmButton" type="button">잔재 확정</button>
+      </div>
+    </dialog>
+
+    <script src="./cutting.js"></script>
+  </body>
+</html>
