@@ -30,7 +30,7 @@ const state = {
 
 const elements = {
   todayText: document.querySelector("#todayText"), orderRows: document.querySelector("#orderRows"), residueRows: document.querySelector("#residueRows"), resultRows: document.querySelector("#resultRows"),
-  selectedCount: document.querySelector("#selectedCount"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
+  selectedCount: document.querySelector("#selectedCount"), clearSelectionButton: document.querySelector("#clearSelectionButton"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
   ordersTab: document.querySelector("#ordersTab"), residueTab: document.querySelector("#residueTab"), resultsTab: document.querySelector("#resultsTab"), ordersView: document.querySelector("#ordersView"), residueView: document.querySelector("#residueView"), resultsView: document.querySelector("#resultsView"),
   currentCode: document.querySelector("#currentCode"), currentSpec: document.querySelector("#currentSpec"), currentSize: document.querySelector("#currentSize"), currentSource: document.querySelector("#currentSource"),
   queuePosition: document.querySelector("#queuePosition"), queueCount: document.querySelector("#queueCount"), nextCode: document.querySelector("#nextCode"), totalSelected: document.querySelector("#totalSelected"), completedCount: document.querySelector("#completedCount"),
@@ -176,7 +176,7 @@ function renderOrders() {
     const selected = state.selectedIds.has(order.id);
     const empty = order.qty <= 0;
     return `<tr data-id="${escapeHtml(order.id)}" class="${selected ? "is-selected" : ""} ${empty ? "is-empty" : ""}">
-      <td><input type="radio" name="workOrderSelection" aria-label="${escapeHtml(order.materialCode)} 선택" ${selected ? "checked" : ""} ${empty || state.phase !== "select" ? "disabled" : ""}></td>
+      <td><input type="radio" name="materialSelection" aria-label="${escapeHtml(order.materialCode)} 선택" ${selected ? "checked" : ""} ${empty || state.phase !== "select" ? "disabled" : ""}></td>
       <td>${escapeHtml(order.receivedAt)}</td><td>${escapeHtml(order.supplier)}</td><td>${escapeHtml(order.materialCode)}</td><td>${escapeHtml(order.steel)}</td>
       <td>${order.thickness}T</td><td>${order.width.toLocaleString()} × ${order.height.toLocaleString()}</td><td>${order.qty}장</td>
       <td><span class="source-mark ${order.source === "sheet" ? "is-on" : "is-off"}">${order.source === "sheet" ? "O" : "X"}</span></td>
@@ -187,11 +187,17 @@ function renderOrders() {
 }
 
 function renderResidues() {
-  elements.residueRows.innerHTML = state.data.residues.map((residue) => `<tr>
-    <td>${escapeHtml(residue.id)}</td><td>${escapeHtml(residue.originalCode)}</td><td>${escapeHtml(residue.steel)}</td>
-    <td>${residue.thickness}T</td><td>${residue.width.toLocaleString()} × ${residue.height.toLocaleString()}</td><td>${residue.qty.toLocaleString()}개</td><td>${escapeHtml(residue.registeredAt)}</td>
-    <td><span class="stock-status ${residue.qty > 0 ? "" : "is-empty"}">${escapeHtml(residue.status)}</span></td>
-  </tr>`).join("");
+  elements.residueRows.innerHTML = state.data.residues.map((residue) => {
+    const linkedOrder = state.data.orders.find((order) => order.residueId === residue.id);
+    const selected = linkedOrder ? state.selectedIds.has(linkedOrder.id) : false;
+    const unavailable = !linkedOrder || residue.qty <= 0;
+    return `<tr data-order-id="${escapeHtml(linkedOrder?.id || "")}" class="${selected ? "is-selected" : ""} ${unavailable ? "is-empty" : ""}">
+      <td><input type="radio" name="materialSelection" aria-label="${escapeHtml(residue.id)} 잔재 선택" ${selected ? "checked" : ""} ${unavailable || state.phase !== "select" ? "disabled" : ""}></td>
+      <td>${escapeHtml(residue.id)}</td><td>${escapeHtml(residue.originalCode)}</td><td>${escapeHtml(residue.steel)}</td>
+      <td>${residue.thickness}T</td><td>${residue.width.toLocaleString()} × ${residue.height.toLocaleString()}</td><td>${residue.qty.toLocaleString()}개</td><td>${escapeHtml(residue.registeredAt)}</td>
+      <td><span class="stock-status ${residue.qty > 0 ? "" : "is-empty"}">${escapeHtml(residue.status)}</span></td>
+    </tr>`;
+  }).join("");
   const totalQuantity = state.data.residues.reduce((sum, residue) => sum + residue.qty, 0);
   elements.residueCount.textContent = String(totalQuantity);
 }
@@ -277,6 +283,7 @@ function syncControls() {
   const isSelecting = state.phase === "select";
   elements.receiptButton.disabled = !isSelecting;
   elements.cutButton.disabled = !isSelecting || state.selectedIds.size === 0;
+  elements.clearSelectionButton.disabled = !isSelecting || state.selectedIds.size === 0;
   elements.completeButton.disabled = state.phase !== "cutting";
   elements.residueProcessButton.disabled = state.phase !== "decision";
   elements.noResidueButton.disabled = state.phase !== "decision";
@@ -302,10 +309,33 @@ function toggleSelection(id) {
   if (state.phase !== "select") return;
   const order = state.data.orders.find((item) => item.id === id);
   if (!order || order.qty <= 0) return;
+  if (state.selectedIds.has(id)) {
+    clearSelection();
+    return;
+  }
   state.selectedIds.clear();
   state.selectedIds.add(id);
   renderAll();
   setMessage("준비", "자재 1건이 선택되었습니다. 자재 절단을 누르세요.", "working");
+}
+
+function clearSelection() {
+  if (state.phase !== "select") return;
+  state.selectedIds.clear();
+  renderAll();
+  setMessage("대기", "작업할 자재를 선택하거나 자재 입고를 진행하세요.");
+}
+
+function handleSelectionClick(event, row, id) {
+  if (!row || !id || state.phase !== "select") return;
+  if (event.target.closest('input[type="radio"]')) {
+    if (state.selectedIds.has(id)) {
+      event.preventDefault();
+      clearSelection();
+    }
+    return;
+  }
+  toggleSelection(id);
 }
 
 function startCutting() {
@@ -477,10 +507,22 @@ elements.orderRows.addEventListener("change", (event) => {
 });
 
 elements.orderRows.addEventListener("click", (event) => {
-  if (event.target.closest('input[type="radio"]')) return;
   const row = event.target.closest("tr");
-  if (row) toggleSelection(row.dataset.id);
+  handleSelectionClick(event, row, row?.dataset.id);
 });
+
+elements.residueRows.addEventListener("change", (event) => {
+  if (!event.target.matches('input[type="radio"]')) return;
+  const row = event.target.closest("tr");
+  if (row?.dataset.orderId) toggleSelection(row.dataset.orderId);
+});
+
+elements.residueRows.addEventListener("click", (event) => {
+  const row = event.target.closest("tr");
+  handleSelectionClick(event, row, row?.dataset.orderId);
+});
+
+elements.clearSelectionButton.addEventListener("click", clearSelection);
 
 elements.cutButton.addEventListener("click", startCutting);
 elements.completeButton.addEventListener("click", completeCutting);

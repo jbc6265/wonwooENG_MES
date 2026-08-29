@@ -53,7 +53,14 @@
             <button class="tab-button" id="residueTab" type="button" role="tab" aria-selected="false" aria-controls="residueView">잔재 재고 <span id="residueCount">3</span></button>
             <button class="tab-button" id="resultsTab" type="button" role="tab" aria-selected="false" aria-controls="resultsView">작업실적 <span id="resultCount">0</span></button>
           </div>
-          <div class="toolbar-summary"><strong id="selectedCount">선택 0건</strong><span>복수선택 불가 · 단일 선택만 가능</span></div>
+          <div class="toolbar-summary">
+            <strong id="selectedCount">선택 0건</strong>
+            <span>복수선택 불가 · 단일 선택만 가능</span>
+            <button class="clear-selection-button" id="clearSelectionButton" type="button" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+              선택 해제
+            </button>
+          </div>
           <button class="utility-button" id="resetButton" type="button" title="초기 더미 데이터로 복원">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0 0 11.6 2.6L20 14M4 10l2.9-3.6A7 7 0 0 1 18.5 9" /></svg>
             데이터 초기화
@@ -75,7 +82,7 @@
 
         <div class="table-view" id="residueView" role="tabpanel" aria-labelledby="residueTab" hidden>
           <table class="material-table residue-table">
-            <thead><tr><th>잔재번호</th><th class="code-column">원자재코드</th><th>강종</th><th>두께</th><th>가로×세로</th><th>수량</th><th>등록일</th><th>상태</th></tr></thead>
+            <thead><tr><th class="check-column">선택</th><th>잔재번호</th><th class="code-column">원자재코드</th><th>강종</th><th>두께</th><th>가로×세로</th><th>수량</th><th>등록일</th><th>상태</th></tr></thead>
             <tbody id="residueRows"></tbody>
           </table>
         </div>
