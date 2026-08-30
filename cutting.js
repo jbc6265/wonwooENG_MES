@@ -26,6 +26,7 @@ const state = {
   queue: [],
   queueIndex: 0,
   activeTab: "orders",
+  inventoryChange: null,
 };
 
 const elements = {
@@ -33,7 +34,7 @@ const elements = {
   selectedCount: document.querySelector("#selectedCount"), clearSelectionButton: document.querySelector("#clearSelectionButton"), materialCount: document.querySelector("#materialCount"), residueCount: document.querySelector("#residueCount"), resultCount: document.querySelector("#resultCount"),
   ordersTab: document.querySelector("#ordersTab"), residueTab: document.querySelector("#residueTab"), resultsTab: document.querySelector("#resultsTab"), ordersView: document.querySelector("#ordersView"), residueView: document.querySelector("#residueView"), resultsView: document.querySelector("#resultsView"),
   currentCode: document.querySelector("#currentCode"), currentSpec: document.querySelector("#currentSpec"), currentSize: document.querySelector("#currentSize"), currentSource: document.querySelector("#currentSource"),
-  queuePosition: document.querySelector("#queuePosition"), queueCount: document.querySelector("#queueCount"), nextCode: document.querySelector("#nextCode"), totalSelected: document.querySelector("#totalSelected"), completedCount: document.querySelector("#completedCount"),
+  queuePosition: document.querySelector("#queuePosition"), inventoryChangeStatus: document.querySelector("#inventoryChangeStatus"), inventoryChangeSummary: document.querySelector("#inventoryChangeSummary"), inventoryBeforeQty: document.querySelector("#inventoryBeforeQty"), inventoryAfterQty: document.querySelector("#inventoryAfterQty"), inventoryChangeResult: document.querySelector("#inventoryChangeResult"),
   residueEntry: document.querySelector("#residueEntry"), residueStatus: document.querySelector("#residueStatus"), residueWidth: document.querySelector("#residueWidth"), residueHeight: document.querySelector("#residueHeight"), inputGuide: document.querySelector("#inputGuide"), popupInputGuide: document.querySelector("#popupInputGuide"),
   receiptButton: document.querySelector("#receiptButton"), cutButton: document.querySelector("#cutButton"), completeButton: document.querySelector("#completeButton"), residueProcessButton: document.querySelector("#residueProcessButton"), noResidueButton: document.querySelector("#noResidueButton"), residueConfirmButton: document.querySelector("#residueConfirmButton"), resetButton: document.querySelector("#resetButton"),
   messageType: document.querySelector("#messageType"), statusMessage: document.querySelector("#statusMessage"), statusBox: document.querySelector(".status-message"),
@@ -226,17 +227,36 @@ function getCurrentMaterial() {
 
 function renderDetail() {
   const current = getCurrentMaterial();
-  const selectedTotal = state.queue.length || state.selectedIds.size;
-  const completed = state.queue.length ? state.queueIndex : 0;
-  const remaining = state.queue.length ? Math.max(0, state.queue.length - state.queueIndex) : 0;
-  const next = state.queue[state.queueIndex + 1];
-
   elements.selectedCount.textContent = `선택 ${state.selectedIds.size}건`;
-  elements.totalSelected.textContent = `${selectedTotal}건`;
-  elements.completedCount.textContent = `${completed}건`;
-  elements.queueCount.textContent = `${remaining}건`;
-  elements.queuePosition.textContent = state.queue.length && current ? `${state.queueIndex + 1} / ${state.queue.length}` : "대기";
-  elements.nextCode.textContent = next ? next.materialCode : "다음 예정 자재 없음";
+  const phaseLabels = {
+    select: current ? "선택" : "대기",
+    cutting: "절단 중",
+    decision: "처리 판단",
+    "residue-entry": "크기 입력",
+  };
+  elements.queuePosition.textContent = phaseLabels[state.phase] || "대기";
+
+  if (state.inventoryChange) {
+    const change = state.inventoryChange;
+    elements.inventoryChangeStatus.textContent = change.status;
+    elements.inventoryChangeSummary.textContent = change.materialCode;
+    elements.inventoryBeforeQty.textContent = `${change.beforeQty.toLocaleString()}${change.unit}`;
+    elements.inventoryAfterQty.textContent = `${change.afterQty.toLocaleString()}${change.unit}`;
+    elements.inventoryChangeResult.textContent = change.result;
+  } else if (current) {
+    const unit = current.source === "sheet" ? "장" : "개";
+    elements.inventoryChangeStatus.textContent = "절단 대기";
+    elements.inventoryChangeSummary.textContent = current.materialCode;
+    elements.inventoryBeforeQty.textContent = `${current.qty.toLocaleString()}${unit}`;
+    elements.inventoryAfterQty.textContent = "-";
+    elements.inventoryChangeResult.textContent = "자재 선택";
+  } else {
+    elements.inventoryChangeStatus.textContent = "대기";
+    elements.inventoryChangeSummary.textContent = "변동 내역 없음";
+    elements.inventoryBeforeQty.textContent = "-";
+    elements.inventoryAfterQty.textContent = "-";
+    elements.inventoryChangeResult.textContent = "대기";
+  }
 
   if (!current) {
     elements.currentCode.textContent = "작업할 자재를 선택하세요";
@@ -316,6 +336,7 @@ function toggleSelection(id) {
     clearSelection();
     return;
   }
+  state.inventoryChange = null;
   state.selectedIds.clear();
   state.selectedIds.add(id);
   renderAll();
@@ -357,6 +378,7 @@ function completeCutting() {
   state.queue.forEach((queued) => {
     const order = state.data.orders.find((item) => item.id === queued.id);
     if (!order || order.qty <= 0) return;
+    const beforeQty = order.qty;
     if (order.source === "residue") {
       const residue = state.data.residues.find((item) => item.id === order.residueId);
       if (residue && residue.qty > 0) {
@@ -364,9 +386,17 @@ function completeCutting() {
         residue.status = residue.qty > 0 ? "가용" : "소진";
         order.qty = residue.qty;
       }
-      return;
+    } else {
+      order.qty -= 1;
     }
-    order.qty -= 1;
+    state.inventoryChange = {
+      materialCode: order.materialCode,
+      beforeQty,
+      afterQty: order.qty,
+      unit: order.source === "sheet" ? "장" : "개",
+      result: "절단 수량 1 차감",
+      status: "반영",
+    };
   });
   saveData();
   state.queueIndex = 0;
@@ -437,6 +467,10 @@ function confirmResidue() {
   };
   state.data.residues.unshift(residue);
   state.data.orders.unshift(makeResidueOrder(residue));
+  if (state.inventoryChange) {
+    state.inventoryChange.result = "절단 -1 · 잔재 +1 등록";
+    state.inventoryChange.status = "완료";
+  }
   saveData();
   elements.residueSizeDialog.close();
   advanceQueue(true);
@@ -445,6 +479,10 @@ function confirmResidue() {
 function registerNoResidueResult() {
   const current = getCurrentMaterial();
   if (!current) return;
+  if (state.inventoryChange) {
+    state.inventoryChange.result = "절단 -1 · 잔재 미등록";
+    state.inventoryChange.status = "완료";
+  }
   state.data.resultSequence += 1;
   state.data.results.unshift({
     id: `CUT-${formatDateKey()}-${String(state.data.resultSequence).padStart(3, "0")}`,
@@ -574,6 +612,14 @@ elements.receiptForm.addEventListener("submit", (event) => {
   };
   material.materialCode = makeMaterialCode(material);
   state.data.orders.unshift(material);
+  state.inventoryChange = {
+    materialCode: material.materialCode,
+    beforeQty: 0,
+    afterQty: material.qty,
+    unit: "장",
+    result: `자재 입고 +${material.qty}`,
+    status: "입고",
+  };
   saveData();
   elements.receiptDialog.close();
   setTab("orders");
@@ -589,6 +635,7 @@ elements.resetButton.addEventListener("click", () => {
   state.phase = "select";
   state.queue = [];
   state.queueIndex = 0;
+  state.inventoryChange = null;
   saveData();
   setTab("orders");
   updateFlow(1);

@@ -11,9 +11,8 @@ body { margin: 0; min-height: 100vh; background: var(--background); color: var(-
   align-items: center; background: var(--navy); color: #fff; display: grid; gap: 16px;
   grid-template-columns: auto 1fr auto; min-height: 96px; padding: 18px 34px;
 }
-.company-brand { align-items: center; display: flex; gap: 12px; min-width: 0; }
+.company-brand { align-items: center; display: flex; min-width: 0; }
 .company-ci { background: #fff; border-radius: 4px; display: block; height: auto; width: clamp(112px, 10vw, 152px); }
-.company-name { font-size: clamp(22px, 2vw, 30px); }
 .process-header h1 { font-size: clamp(30px, 3vw, 48px); margin: 0; text-align: center; }
 .header-info { align-items: center; display: flex; font-size: clamp(17px, 1.5vw, 24px); font-weight: 800; gap: 18px; white-space: nowrap; }
 .header-info i { background: rgba(255,255,255,.38); display: block; height: 28px; width: 1px; }
@@ -63,7 +62,6 @@ body { margin: 0; min-height: 100vh; background: var(--background); color: var(-
 @media (max-width: 520px) {
   .process-header { grid-template-columns: 1fr; }
   .company-ci { width: 108px; }
-  .company-name { font-size: 21px; }
   .header-info { align-items: flex-start; flex-direction: column; gap: 8px; }
   .header-info i { display: none; }
   .process-content { padding: 24px 14px; }
