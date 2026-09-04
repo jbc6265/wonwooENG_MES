@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MES POP - 원우ENG 프레스 공정</title>
+    <link rel="stylesheet" href="./operator.css" />
+    <style>
+      :root {
+        --navy: #0b2742;
+        --blue: #155c9f;
+        --line: #c9d2dc;
+        --surface: #fff;
+        --background: #edf2f7;
+        --green: #168b3f;
+        --orange: #d96c18;
+        --red: #c9362c;
+        --text: #17212f;
+        font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: var(--background); color: var(--text); }
+      button, a { font: inherit; }
+      .press-shell { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; min-height: 100vh; }
+      .press-header {
+        align-items: center; background: var(--navy); color: #fff; display: grid; gap: 18px;
+        grid-template-columns: auto 1fr; min-height: 86px; padding: 16px 28px;
+      }
+      .header-title { align-items: center; display: flex; gap: 18px; min-width: 0; }
+      .press-ci { background: #fff; border-radius: 4px; display: block; width: clamp(112px, 10vw, 150px); }
+      .header-title i, .header-facts i { background: rgba(255,255,255,.36); display: block; height: 28px; width: 1px; }
+      .header-title h1 { font-size: clamp(26px, 2.5vw, 42px); margin: 0; overflow-wrap: anywhere; }
+      .header-facts { align-items: center; display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-end; font-size: clamp(15px, 1.2vw, 19px); font-weight: 800; }
+      .back-button {
+        align-items: center; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.34); border-radius: 4px;
+        color: #fff; display: inline-flex; gap: 8px; min-height: 42px; padding: 0 13px; text-decoration: none;
+      }
+      .back-button svg, .operator-select-button svg { fill: none; height: 20px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.3; width: 20px; }
+
+      .flow-strip {
+        align-items: center; background: #fff; border-bottom: 1px solid var(--line); display: grid; gap: 12px;
+        grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 18px 28px;
+      }
+      .flow-step { align-items: center; border: 2px solid var(--line); border-radius: 6px; display: flex; gap: 12px; min-height: 66px; padding: 10px 14px; }
+      .flow-step span { align-items: center; background: #d8e0ea; border-radius: 999px; display: flex; flex: 0 0 auto; font-weight: 900; height: 34px; justify-content: center; width: 34px; }
+      .flow-step strong { color: var(--navy); font-size: clamp(16px, 1.5vw, 22px); line-height: 1.2; }
+      .flow-step.is-active { border-color: var(--blue); box-shadow: inset 0 0 0 2px rgba(21,92,159,.12); }
+      .flow-step.is-active span { background: var(--blue); color: #fff; }
+
+      .press-workspace { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr); min-height: 0; padding: 22px 28px; }
+      .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-height: 0; }
+      .panel-heading { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 14px; justify-content: space-between; min-height: 66px; padding: 14px 18px; }
+      .panel-heading h2 { color: var(--navy); font-size: clamp(21px, 1.8vw, 28px); margin: 0; }
+      .ghost-button {
+        background: #f5f8fb; border: 1px solid var(--line); border-radius: 4px; color: var(--navy); cursor: pointer;
+        font-size: 16px; font-weight: 900; min-height: 40px; padding: 0 14px;
+      }
+      .table-wrap { overflow: auto; }
+      table { border-collapse: collapse; min-width: 860px; width: 100%; }
+      th, td { border-bottom: 1px solid #dbe2ea; padding: 15px 12px; text-align: left; white-space: nowrap; }
+      th { background: #f2f6fa; color: #304154; font-size: 15px; }
+      td { font-size: 17px; font-weight: 700; }
+      tbody tr:first-child { background: #eef6ff; }
+      .status { border-radius: 999px; color: #fff; display: inline-flex; font-size: 14px; font-weight: 900; padding: 6px 10px; }
+      .status.ready { background: var(--blue); }
+      .status.run { background: var(--orange); }
+      .status.done { background: var(--green); }
+
+      .detail-stack { display: grid; gap: 18px; grid-template-rows: auto auto 1fr; min-height: 0; }
+      .summary-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+      .summary-card span { color: #526173; display: block; font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+      .summary-card strong { color: var(--navy); display: block; font-size: clamp(28px, 3vw, 44px); line-height: 1.1; }
+      .summary-card p { color: #3f4b59; font-size: 17px; font-weight: 700; margin: 12px 0 0; }
+      .metric-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metric { background: #f7f9fc; border: 1px solid #d6dee8; border-radius: 6px; padding: 14px; }
+      .metric span { color: #556477; display: block; font-size: 14px; font-weight: 800; }
+      .metric strong { color: var(--navy); display: block; font-size: 27px; margin-top: 6px; }
+      .checklist { list-style: none; margin: 0; padding: 0; }
+      .checklist li { align-items: center; border-bottom: 1px solid #e4e9ef; display: flex; gap: 12px; min-height: 58px; padding: 12px 0; }
+      .checklist li:last-child { border-bottom: 0; }
+      .check-dot { background: #d8e0ea; border-radius: 999px; flex: 0 0 auto; height: 18px; width: 18px; }
+      .checklist li.is-done .check-dot { background: var(--green); }
+      .checklist strong { color: var(--navy); font-size: 17px; }
+
+      .press-footer {
+        align-items: center; background: #fff; border-top: 1px solid var(--line); display: grid; gap: 18px;
+        grid-template-columns: minmax(280px, 1fr) auto auto; padding: 16px 28px;
+      }
+      .status-message { align-items: center; display: flex; gap: 12px; min-width: 0; }
+      .status-message span { background: var(--blue); border-radius: 999px; color: #fff; font-weight: 900; padding: 8px 13px; white-space: nowrap; }
+      .status-message strong { color: var(--navy); font-size: clamp(17px, 1.5vw, 23px); overflow-wrap: anywhere; }
+      .press-footer time { border-left: 1px solid var(--line); color: var(--navy); font-size: 22px; font-weight: 900; padding-left: 18px; white-space: nowrap; }
+      .action-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(132px, 1fr)); }
+      .action-button { border: 0; border-radius: 5px; color: #fff; cursor: pointer; font-size: clamp(17px, 1.4vw, 22px); font-weight: 900; min-height: 58px; padding: 0 18px; }
+      .action-button.start { background: var(--blue); }
+      .action-button.pause { background: var(--orange); }
+      .action-button.finish { background: var(--green); }
+      .action-button.defect { background: var(--red); }
+
+      @media (max-width: 1100px) {
+        .press-header, .press-workspace, .press-footer { padding-left: 18px; padding-right: 18px; }
+        .press-header, .press-workspace, .press-footer { grid-template-columns: 1fr; }
+        .header-facts { justify-content: flex-start; }
+        .flow-strip { grid-template-columns: 1fr; padding: 14px 18px; }
+        .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 560px) {
+        .header-title { align-items: flex-start; flex-direction: column; gap: 10px; }
+        .header-title i, .header-facts i { display: none; }
+        .metric-grid, .action-grid { grid-template-columns: 1fr; }
+        .press-workspace { padding: 14px; }
+        .press-footer { padding: 14px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="press-shell">
+      <header class="press-header">
+        <div class="header-title">
+          <img class="press-ci" src="./assets/wonwoo-ci.jpg" alt="원우ENG CI" />
+          <i aria-hidden="true"></i>
+          <h1>원우ENG 프레스 공정</h1>
+        </div>
+        <div class="header-facts" aria-label="작업 기본 정보">
+          <strong id="todayText">오늘 날짜</strong>
+          <i aria-hidden="true"></i>
+          <span>공정명 <b>프레스</b></span>
+          <i aria-hidden="true"></i>
+          <span>작업자 <b data-operator-name>조병철</b></span>
+          <button class="operator-select-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10" /></svg>
+            작업자 선택
+          </button>
+          <a href="./index.html" class="back-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            공정 선택
+          </a>
+        </div>
+      </header>
+
+      <section class="flow-strip" aria-label="프레스 작업 흐름">
+        <div class="flow-step is-active"><span>1</span><strong>작업지시 선택</strong></div>
+        <div class="flow-step"><span>2</span><strong>금형 확인</strong></div>
+        <div class="flow-step"><span>3</span><strong>프레스 가동</strong></div>
+        <div class="flow-step"><span>4</span><strong>품질 확인</strong></div>
+        <div class="flow-step"><span>5</span><strong>실적 등록</strong></div>
+      </section>
+
+      <section class="press-workspace">
+        <section class="panel" aria-labelledby="pressOrderTitle">
+          <div class="panel-heading">
+            <h2 id="pressOrderTitle">프레스 작업지시 목록</h2>
+            <button class="ghost-button" type="button">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>상태</th>
+                  <th>작업지시</th>
+                  <th>품번</th>
+                  <th>품명</th>
+                  <th>금형</th>
+                  <th>계획수량</th>
+                  <th>양품</th>
+                  <th>불량</th>
+                  <th>설비</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="status run">진행</span></td>
+                  <td>PR-260904-001</td>
+                  <td>WW-P-1842</td>
+                  <td>브라켓 성형품</td>
+                  <td>MD-08</td>
+                  <td>240</td>
+                  <td>96</td>
+                  <td>1</td>
+                  <td>PRESS-02</td>
+                </tr>
+                <tr>
+                  <td><span class="status ready">대기</span></td>
+                  <td>PR-260904-002</td>
+                  <td>WW-P-1910</td>
+                  <td>보강판 타발품</td>
+                  <td>MD-11</td>
+                  <td>180</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>PRESS-01</td>
+                </tr>
+                <tr>
+                  <td><span class="status done">완료</span></td>
+                  <td>PR-260904-003</td>
+                  <td>WW-P-1776</td>
+                  <td>커버 플레이트</td>
+                  <td>MD-04</td>
+                  <td>120</td>
+                  <td>120</td>
+                  <td>0</td>
+                  <td>PRESS-03</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="detail-stack" aria-label="프레스 작업 상세">
+          <article class="summary-card">
+            <span>현재 작업</span>
+            <strong>PR-260904-001</strong>
+            <p>PRESS-02 · MD-08 금형 장착 확인</p>
+          </article>
+
+          <section class="metric-grid" aria-label="작업 실적 요약">
+            <div class="metric"><span>계획</span><strong>240</strong></div>
+            <div class="metric"><span>양품</span><strong>96</strong></div>
+            <div class="metric"><span>불량</span><strong>1</strong></div>
+          </section>
+
+          <article class="summary-card">
+            <span>작업 체크리스트</span>
+            <ul class="checklist">
+              <li class="is-done"><i class="check-dot" aria-hidden="true"></i><strong>금형 번호 확인</strong></li>
+              <li class="is-done"><i class="check-dot" aria-hidden="true"></i><strong>소재 투입 상태 확인</strong></li>
+              <li><i class="check-dot" aria-hidden="true"></i><strong>초품 검사 등록</strong></li>
+              <li><i class="check-dot" aria-hidden="true"></i><strong>작업 실적 확정</strong></li>
+            </ul>
+          </article>
+        </aside>
+      </section>
+
+      <footer class="press-footer">
+        <section class="status-message" aria-live="polite">
+          <span>진행</span>
+          <strong>프레스 작업을 진행 중입니다. 생산 수량과 불량 수량을 확인하세요.</strong>
+        </section>
+        <time id="clockText">--:--:--</time>
+        <section class="action-grid">
+          <button class="action-button start" type="button">작업시작</button>
+          <button class="action-button pause" type="button">일시정지</button>
+          <button class="action-button finish" type="button">실적등록</button>
+          <button class="action-button defect" type="button">불량등록</button>
+        </section>
+      </footer>
+    </main>
+
+    <script src="./operator.js"></script>
+    <script src="./process-select.js"></script>
+  </body>
+</html>
+
+
