@@ -3,254 +3,278 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MES POP - 원우ENG 프레스 공정</title>
-    <link rel="stylesheet" href="./operator.css" />
+    <title>원우ENG MES - 프레스 공정 관리</title>
     <style>
       :root {
         --navy: #0b2742;
         --blue: #155c9f;
-        --line: #c9d2dc;
-        --surface: #fff;
-        --background: #edf2f7;
         --green: #168b3f;
         --orange: #d96c18;
         --red: #c9362c;
-        --text: #17212f;
+        --ink: #17212f;
+        --muted: #5b697a;
+        --line: #cbd5df;
+        --soft-line: #e3e9ef;
+        --surface: #ffffff;
+        --background: #edf2f7;
         font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
       }
 
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; background: var(--background); color: var(--text); }
-      button, a { font: inherit; }
-      .press-shell { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; min-height: 100vh; }
-      .press-header {
-        align-items: center; background: var(--navy); color: #fff; display: grid; gap: 18px;
-        grid-template-columns: auto 1fr; min-height: 86px; padding: 16px 28px;
-      }
-      .header-title { align-items: center; display: flex; gap: 18px; min-width: 0; }
-      .press-ci { background: #fff; border-radius: 4px; display: block; width: clamp(112px, 10vw, 150px); }
-      .header-title i, .header-facts i { background: rgba(255,255,255,.36); display: block; height: 28px; width: 1px; }
-      .header-title h1 { font-size: clamp(26px, 2.5vw, 42px); margin: 0; overflow-wrap: anywhere; }
-      .header-facts { align-items: center; display: flex; flex-wrap: wrap; gap: 14px; justify-content: flex-end; font-size: clamp(15px, 1.2vw, 19px); font-weight: 800; }
-      .back-button {
-        align-items: center; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.34); border-radius: 4px;
-        color: #fff; display: inline-flex; gap: 8px; min-height: 42px; padding: 0 13px; text-decoration: none;
-      }
-      .back-button svg, .operator-select-button svg { fill: none; height: 20px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.3; width: 20px; }
+      body { margin: 0; min-height: 100vh; background: var(--background); color: var(--ink); }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      .mes-shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav { background: var(--navy); color: #fff; display: flex; flex-direction: column; padding: 22px 18px; }
+      .brand { border-bottom: 1px solid rgba(255,255,255,.22); padding-bottom: 22px; }
+      .brand img { background: #fff; border-radius: 4px; display: block; width: 146px; }
+      .brand strong { display: block; font-size: 22px; line-height: 1.2; margin-top: 18px; }
+      .brand span { color: rgba(255,255,255,.74); display: block; font-size: 14px; font-weight: 800; margin-top: 8px; }
+      .nav-list { display: grid; gap: 8px; margin-top: 24px; }
+      .nav-item { border-radius: 5px; color: rgba(255,255,255,.78); display: block; font-size: 17px; font-weight: 900; padding: 13px 14px; text-decoration: none; }
+      .nav-item.is-active { background: #fff; color: var(--navy); }
+      .nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
+      .nav-item.is-active:hover { background: #fff; color: var(--navy); }
+      .nav-footer { border-top: 1px solid rgba(255,255,255,.22); color: rgba(255,255,255,.72); font-size: 13px; font-weight: 800; line-height: 1.5; margin-top: auto; padding-top: 18px; }
 
-      .flow-strip {
-        align-items: center; background: #fff; border-bottom: 1px solid var(--line); display: grid; gap: 12px;
-        grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 18px 28px;
-      }
-      .flow-step { align-items: center; border: 2px solid var(--line); border-radius: 6px; display: flex; gap: 12px; min-height: 66px; padding: 10px 14px; }
-      .flow-step span { align-items: center; background: #d8e0ea; border-radius: 999px; display: flex; flex: 0 0 auto; font-weight: 900; height: 34px; justify-content: center; width: 34px; }
-      .flow-step strong { color: var(--navy); font-size: clamp(16px, 1.5vw, 22px); line-height: 1.2; }
-      .flow-step.is-active { border-color: var(--blue); box-shadow: inset 0 0 0 2px rgba(21,92,159,.12); }
-      .flow-step.is-active span { background: var(--blue); color: #fff; }
+      .main-area { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; }
+      .top-bar { align-items: center; background: #fff; border-bottom: 1px solid var(--line); display: grid; gap: 18px; grid-template-columns: 1fr auto; min-height: 82px; padding: 16px 28px; }
+      .top-title h1 { color: var(--navy); font-size: clamp(25px, 2.4vw, 38px); line-height: 1.15; margin: 0; }
+      .top-title p { color: var(--muted); font-size: 16px; font-weight: 800; margin: 6px 0 0; }
+      .top-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+      .date-chip { background: #f3f7fb; border: 1px solid var(--line); border-radius: 4px; color: var(--navy); font-weight: 900; min-height: 42px; padding: 10px 13px; white-space: nowrap; }
+      .back-link { align-items: center; background: var(--navy); border-radius: 4px; color: #fff; display: inline-flex; font-weight: 900; min-height: 42px; padding: 0 14px; text-decoration: none; }
 
-      .press-workspace { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr); min-height: 0; padding: 22px 28px; }
-      .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-height: 0; }
-      .panel-heading { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 14px; justify-content: space-between; min-height: 66px; padding: 14px 18px; }
-      .panel-heading h2 { color: var(--navy); font-size: clamp(21px, 1.8vw, 28px); margin: 0; }
-      .ghost-button {
-        background: #f5f8fb; border: 1px solid var(--line); border-radius: 4px; color: var(--navy); cursor: pointer;
-        font-size: 16px; font-weight: 900; min-height: 40px; padding: 0 14px;
-      }
+      .filter-bar { align-items: center; background: #f8fafc; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(150px, 1fr)) auto; padding: 14px 28px; }
+      .filter-field { display: grid; gap: 6px; }
+      .filter-field span { color: var(--muted); font-size: 13px; font-weight: 900; }
+      .filter-field select, .filter-field input { background: #fff; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font-weight: 800; min-height: 42px; padding: 0 11px; width: 100%; }
+      .search-button { align-self: end; background: var(--blue); border: 0; border-radius: 4px; color: #fff; font-weight: 900; min-height: 42px; padding: 0 18px; }
+
+      .dashboard { display: grid; gap: 18px; grid-template-rows: auto minmax(0, 1fr); min-width: 0; padding: 20px 28px 24px; }
+      .kpi-grid { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .kpi-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+      .kpi-card span { color: var(--muted); display: block; font-size: 14px; font-weight: 900; }
+      .kpi-card strong { color: var(--navy); display: block; font-size: clamp(30px, 3vw, 44px); line-height: 1; margin-top: 10px; }
+      .kpi-card small { color: var(--green); display: block; font-size: 14px; font-weight: 900; margin-top: 11px; }
+      .kpi-card.warning small { color: var(--orange); }
+      .kpi-card.danger small { color: var(--red); }
+
+      .content-grid { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.45fr) minmax(330px, .55fr); min-height: 0; }
+      .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-height: 0; }
+      .panel-header { align-items: center; border-bottom: 1px solid var(--soft-line); display: flex; gap: 14px; justify-content: space-between; min-height: 62px; padding: 14px 16px; }
+      .panel-header h2 { color: var(--navy); font-size: 22px; margin: 0; }
+      .panel-header span { color: var(--muted); font-size: 14px; font-weight: 900; }
       .table-wrap { overflow: auto; }
-      table { border-collapse: collapse; min-width: 860px; width: 100%; }
-      th, td { border-bottom: 1px solid #dbe2ea; padding: 15px 12px; text-align: left; white-space: nowrap; }
-      th { background: #f2f6fa; color: #304154; font-size: 15px; }
-      td { font-size: 17px; font-weight: 700; }
-      tbody tr:first-child { background: #eef6ff; }
-      .status { border-radius: 999px; color: #fff; display: inline-flex; font-size: 14px; font-weight: 900; padding: 6px 10px; }
-      .status.ready { background: var(--blue); }
+      table { border-collapse: collapse; min-width: 980px; width: 100%; }
+      th, td { border-bottom: 1px solid var(--soft-line); padding: 13px 12px; text-align: left; white-space: nowrap; }
+      th { background: #f2f6fa; color: #405165; font-size: 14px; font-weight: 900; }
+      td { font-size: 15px; font-weight: 800; }
+      tbody tr.is-selected { background: #eef6ff; }
+      .status { border-radius: 999px; color: #fff; display: inline-flex; font-size: 13px; font-weight: 900; justify-content: center; min-width: 58px; padding: 6px 10px; }
+      .status.plan { background: var(--blue); }
       .status.run { background: var(--orange); }
       .status.done { background: var(--green); }
+      .status.hold { background: var(--red); }
+      .progress-track { background: #dbe4ee; border-radius: 999px; height: 10px; overflow: hidden; width: 108px; }
+      .progress-track i { background: var(--blue); display: block; height: 100%; }
 
-      .detail-stack { display: grid; gap: 18px; grid-template-rows: auto auto 1fr; min-height: 0; }
-      .summary-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
-      .summary-card span { color: #526173; display: block; font-size: 15px; font-weight: 800; margin-bottom: 8px; }
-      .summary-card strong { color: var(--navy); display: block; font-size: clamp(28px, 3vw, 44px); line-height: 1.1; }
-      .summary-card p { color: #3f4b59; font-size: 17px; font-weight: 700; margin: 12px 0 0; }
-      .metric-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .metric { background: #f7f9fc; border: 1px solid #d6dee8; border-radius: 6px; padding: 14px; }
-      .metric span { color: #556477; display: block; font-size: 14px; font-weight: 800; }
-      .metric strong { color: var(--navy); display: block; font-size: 27px; margin-top: 6px; }
-      .checklist { list-style: none; margin: 0; padding: 0; }
-      .checklist li { align-items: center; border-bottom: 1px solid #e4e9ef; display: flex; gap: 12px; min-height: 58px; padding: 12px 0; }
-      .checklist li:last-child { border-bottom: 0; }
-      .check-dot { background: #d8e0ea; border-radius: 999px; flex: 0 0 auto; height: 18px; width: 18px; }
-      .checklist li.is-done .check-dot { background: var(--green); }
-      .checklist strong { color: var(--navy); font-size: 17px; }
+      .right-stack { display: grid; gap: 18px; grid-template-rows: auto auto 1fr; min-height: 0; }
+      .machine-list { display: grid; gap: 10px; padding: 14px 16px 16px; }
+      .machine-row { align-items: center; border: 1px solid var(--soft-line); border-radius: 6px; display: grid; gap: 8px; grid-template-columns: 1fr auto; padding: 13px; }
+      .machine-row strong { color: var(--navy); font-size: 17px; }
+      .machine-row span { color: var(--muted); font-size: 13px; font-weight: 900; }
+      .machine-row em { border-radius: 999px; color: #fff; font-style: normal; font-weight: 900; padding: 6px 10px; }
+      .machine-row em.run { background: var(--green); }
+      .machine-row em.setup { background: var(--orange); }
+      .machine-row em.stop { background: var(--red); }
+      .issue-list { list-style: none; margin: 0; padding: 14px 16px 16px; }
+      .issue-list li { border-bottom: 1px solid var(--soft-line); display: grid; gap: 5px; padding: 12px 0; }
+      .issue-list li:first-child { padding-top: 0; }
+      .issue-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+      .issue-list strong { color: var(--navy); font-size: 16px; }
+      .issue-list span { color: var(--muted); font-size: 14px; font-weight: 800; }
 
-      .press-footer {
-        align-items: center; background: #fff; border-top: 1px solid var(--line); display: grid; gap: 18px;
-        grid-template-columns: minmax(280px, 1fr) auto auto; padding: 16px 28px;
-      }
-      .status-message { align-items: center; display: flex; gap: 12px; min-width: 0; }
-      .status-message span { background: var(--blue); border-radius: 999px; color: #fff; font-weight: 900; padding: 8px 13px; white-space: nowrap; }
-      .status-message strong { color: var(--navy); font-size: clamp(17px, 1.5vw, 23px); overflow-wrap: anywhere; }
-      .press-footer time { border-left: 1px solid var(--line); color: var(--navy); font-size: 22px; font-weight: 900; padding-left: 18px; white-space: nowrap; }
-      .action-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(132px, 1fr)); }
-      .action-button { border: 0; border-radius: 5px; color: #fff; cursor: pointer; font-size: clamp(17px, 1.4vw, 22px); font-weight: 900; min-height: 58px; padding: 0 18px; }
-      .action-button.start { background: var(--blue); }
-      .action-button.pause { background: var(--orange); }
-      .action-button.finish { background: var(--green); }
-      .action-button.defect { background: var(--red); }
-
-      @media (max-width: 1100px) {
-        .press-header, .press-workspace, .press-footer { padding-left: 18px; padding-right: 18px; }
-        .press-header, .press-workspace, .press-footer { grid-template-columns: 1fr; }
-        .header-facts { justify-content: flex-start; }
-        .flow-strip { grid-template-columns: 1fr; padding: 14px 18px; }
-        .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      @media (max-width: 1180px) {
+        .mes-shell { grid-template-columns: 1fr; }
+        .side-nav { display: none; }
+        .filter-bar, .content-grid { grid-template-columns: 1fr; }
+        .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
 
-      @media (max-width: 560px) {
-        .header-title { align-items: flex-start; flex-direction: column; gap: 10px; }
-        .header-title i, .header-facts i { display: none; }
-        .metric-grid, .action-grid { grid-template-columns: 1fr; }
-        .press-workspace { padding: 14px; }
-        .press-footer { padding: 14px; }
+      @media (max-width: 640px) {
+        .top-bar, .filter-bar, .dashboard { padding-left: 14px; padding-right: 14px; }
+        .top-bar { grid-template-columns: 1fr; }
+        .top-actions { justify-content: flex-start; }
+        .kpi-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
-    <main class="press-shell">
-      <header class="press-header">
-        <div class="header-title">
-          <img class="press-ci" src="./assets/wonwoo-ci.jpg" alt="원우ENG CI" />
-          <i aria-hidden="true"></i>
-          <h1>원우ENG 프레스 공정</h1>
+    <main class="mes-shell">
+      <aside class="side-nav" aria-label="MES 메뉴">
+        <div class="brand">
+          <img src="./assets/wonwoo-ci.jpg" alt="원우ENG CI" />
+          <strong>원우ENG MES</strong>
+          <span>관리자 콘솔</span>
         </div>
-        <div class="header-facts" aria-label="작업 기본 정보">
-          <strong id="todayText">오늘 날짜</strong>
-          <i aria-hidden="true"></i>
-          <span>공정명 <b>프레스</b></span>
-          <i aria-hidden="true"></i>
-          <span>작업자 <b data-operator-name>조병철</b></span>
-          <button class="operator-select-button" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10" /></svg>
-            작업자 선택
-          </button>
-          <a href="./index.html" class="back-button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-            공정 선택
-          </a>
-        </div>
-      </header>
+        <nav class="nav-list">
+          <a class="nav-item" href="./index.html">공정 선택</a>
+          <a class="nav-item" href="./final-inspection.html">최종검사 POP</a>
+          <a class="nav-item" href="./cutting.html">절단 POP</a>
+          <a class="nav-item is-active" href="./press.html">프레스 관리</a>
+        </nav>
+        <div class="nav-footer">사무실 관리자용 화면<br />생산 현황과 설비 상태를 통합 관리합니다.</div>
+      </aside>
 
-      <section class="flow-strip" aria-label="프레스 작업 흐름">
-        <div class="flow-step is-active"><span>1</span><strong>작업지시 선택</strong></div>
-        <div class="flow-step"><span>2</span><strong>금형 확인</strong></div>
-        <div class="flow-step"><span>3</span><strong>프레스 가동</strong></div>
-        <div class="flow-step"><span>4</span><strong>품질 확인</strong></div>
-        <div class="flow-step"><span>5</span><strong>실적 등록</strong></div>
-      </section>
+      <section class="main-area">
+        <header class="top-bar">
+          <div class="top-title">
+            <h1>프레스 공정 관리</h1>
+            <p>작업지시, 설비 가동, 생산 실적, 품질 이슈를 사무실에서 통합 모니터링합니다.</p>
+          </div>
+          <div class="top-actions">
+            <span class="date-chip" id="todayText">오늘 날짜</span>
+            <a class="back-link" href="./index.html">공정 선택</a>
+          </div>
+        </header>
 
-      <section class="press-workspace">
-        <section class="panel" aria-labelledby="pressOrderTitle">
-          <div class="panel-heading">
-            <h2 id="pressOrderTitle">프레스 작업지시 목록</h2>
-            <button class="ghost-button" type="button">새로고침</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>상태</th>
-                  <th>작업지시</th>
-                  <th>품번</th>
-                  <th>품명</th>
-                  <th>금형</th>
-                  <th>계획수량</th>
-                  <th>양품</th>
-                  <th>불량</th>
-                  <th>설비</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="status run">진행</span></td>
-                  <td>PR-260904-001</td>
-                  <td>WW-P-1842</td>
-                  <td>브라켓 성형품</td>
-                  <td>MD-08</td>
-                  <td>240</td>
-                  <td>96</td>
-                  <td>1</td>
-                  <td>PRESS-02</td>
-                </tr>
-                <tr>
-                  <td><span class="status ready">대기</span></td>
-                  <td>PR-260904-002</td>
-                  <td>WW-P-1910</td>
-                  <td>보강판 타발품</td>
-                  <td>MD-11</td>
-                  <td>180</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>PRESS-01</td>
-                </tr>
-                <tr>
-                  <td><span class="status done">완료</span></td>
-                  <td>PR-260904-003</td>
-                  <td>WW-P-1776</td>
-                  <td>커버 플레이트</td>
-                  <td>MD-04</td>
-                  <td>120</td>
-                  <td>120</td>
-                  <td>0</td>
-                  <td>PRESS-03</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <section class="filter-bar" aria-label="프레스 현황 조회 조건">
+          <label class="filter-field"><span>작업일자</span><input type="date" value="2026-09-04" /></label>
+          <label class="filter-field"><span>설비</span><select><option>전체 설비</option><option>PRESS-01</option><option>PRESS-02</option><option>PRESS-03</option></select></label>
+          <label class="filter-field"><span>진행상태</span><select><option>전체 상태</option><option>계획</option><option>진행</option><option>완료</option><option>보류</option></select></label>
+          <label class="filter-field"><span>품번 검색</span><input type="search" placeholder="품번 또는 작업지시" /></label>
+          <button class="search-button" type="button">조회</button>
         </section>
 
-        <aside class="detail-stack" aria-label="프레스 작업 상세">
-          <article class="summary-card">
-            <span>현재 작업</span>
-            <strong>PR-260904-001</strong>
-            <p>PRESS-02 · MD-08 금형 장착 확인</p>
-          </article>
-
-          <section class="metric-grid" aria-label="작업 실적 요약">
-            <div class="metric"><span>계획</span><strong>240</strong></div>
-            <div class="metric"><span>양품</span><strong>96</strong></div>
-            <div class="metric"><span>불량</span><strong>1</strong></div>
+        <section class="dashboard">
+          <section class="kpi-grid" aria-label="프레스 KPI">
+            <article class="kpi-card"><span>금일 계획수량</span><strong>1,240</strong><small>전일 대비 +8.5%</small></article>
+            <article class="kpi-card"><span>금일 생산실적</span><strong>732</strong><small>달성률 59.0%</small></article>
+            <article class="kpi-card warning"><span>평균 가동률</span><strong>82%</strong><small>PRESS-03 셋업 대기</small></article>
+            <article class="kpi-card danger"><span>품질 이슈</span><strong>3</strong><small>확인 필요 1건</small></article>
           </section>
 
-          <article class="summary-card">
-            <span>작업 체크리스트</span>
-            <ul class="checklist">
-              <li class="is-done"><i class="check-dot" aria-hidden="true"></i><strong>금형 번호 확인</strong></li>
-              <li class="is-done"><i class="check-dot" aria-hidden="true"></i><strong>소재 투입 상태 확인</strong></li>
-              <li><i class="check-dot" aria-hidden="true"></i><strong>초품 검사 등록</strong></li>
-              <li><i class="check-dot" aria-hidden="true"></i><strong>작업 실적 확정</strong></li>
-            </ul>
-          </article>
-        </aside>
-      </section>
+          <section class="content-grid">
+            <section class="panel" aria-labelledby="ordersTitle">
+              <div class="panel-header">
+                <h2 id="ordersTitle">프레스 작업지시 현황</h2>
+                <span>최근 갱신 16:30</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>상태</th>
+                      <th>작업지시</th>
+                      <th>품번</th>
+                      <th>품명</th>
+                      <th>금형</th>
+                      <th>설비</th>
+                      <th>계획</th>
+                      <th>실적</th>
+                      <th>불량</th>
+                      <th>진척률</th>
+                      <th>관리자 메모</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="is-selected">
+                      <td><span class="status run">진행</span></td>
+                      <td>PR-260904-001</td>
+                      <td>WW-P-1842</td>
+                      <td>브라켓 성형품</td>
+                      <td>MD-08</td>
+                      <td>PRESS-02</td>
+                      <td>240</td>
+                      <td>96</td>
+                      <td>1</td>
+                      <td><div class="progress-track"><i style="width: 40%"></i></div></td>
+                      <td>초품 검사 완료</td>
+                    </tr>
+                    <tr>
+                      <td><span class="status plan">계획</span></td>
+                      <td>PR-260904-002</td>
+                      <td>WW-P-1910</td>
+                      <td>보강판 타발품</td>
+                      <td>MD-11</td>
+                      <td>PRESS-01</td>
+                      <td>180</td>
+                      <td>0</td>
+                      <td>0</td>
+                      <td><div class="progress-track"><i style="width: 0%"></i></div></td>
+                      <td>소재 투입 대기</td>
+                    </tr>
+                    <tr>
+                      <td><span class="status done">완료</span></td>
+                      <td>PR-260904-003</td>
+                      <td>WW-P-1776</td>
+                      <td>커버 플레이트</td>
+                      <td>MD-04</td>
+                      <td>PRESS-03</td>
+                      <td>120</td>
+                      <td>120</td>
+                      <td>0</td>
+                      <td><div class="progress-track"><i style="width: 100%"></i></div></td>
+                      <td>실적 확정</td>
+                    </tr>
+                    <tr>
+                      <td><span class="status hold">보류</span></td>
+                      <td>PR-260904-004</td>
+                      <td>WW-P-2035</td>
+                      <td>힌지 플레이트</td>
+                      <td>MD-15</td>
+                      <td>PRESS-02</td>
+                      <td>300</td>
+                      <td>0</td>
+                      <td>0</td>
+                      <td><div class="progress-track"><i style="width: 0%"></i></div></td>
+                      <td>금형 점검 필요</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-      <footer class="press-footer">
-        <section class="status-message" aria-live="polite">
-          <span>진행</span>
-          <strong>프레스 작업을 진행 중입니다. 생산 수량과 불량 수량을 확인하세요.</strong>
+            <aside class="right-stack">
+              <section class="panel" aria-labelledby="machineTitle">
+                <div class="panel-header"><h2 id="machineTitle">설비 가동 현황</h2><span>3대</span></div>
+                <div class="machine-list">
+                  <div class="machine-row"><div><strong>PRESS-01</strong><span>다음 작업 PR-260904-002</span></div><em class="setup">셋업</em></div>
+                  <div class="machine-row"><div><strong>PRESS-02</strong><span>현재 작업 PR-260904-001</span></div><em class="run">가동</em></div>
+                  <div class="machine-row"><div><strong>PRESS-03</strong><span>작업 완료 후 대기</span></div><em class="stop">대기</em></div>
+                </div>
+              </section>
+
+              <section class="panel" aria-labelledby="qualityTitle">
+                <div class="panel-header"><h2 id="qualityTitle">품질 및 조치 이슈</h2><span>미해결 1건</span></div>
+                <ul class="issue-list">
+                  <li><strong>PR-260904-004 금형 점검 요청</strong><span>MD-15 타발 위치 편차 확인 필요</span></li>
+                  <li><strong>PR-260904-001 초품 검사 완료</strong><span>치수 검사 기준 내 승인</span></li>
+                  <li><strong>PRESS-03 예방점검 예정</strong><span>금일 작업 종료 후 20분 점검</span></li>
+                </ul>
+              </section>
+
+              <section class="panel" aria-labelledby="planTitle">
+                <div class="panel-header"><h2 id="planTitle">관리 포인트</h2><span>오늘</span></div>
+                <ul class="issue-list">
+                  <li><strong>오후 잔여 계획</strong><span>508개 생산 필요, PRESS-01 투입 순서 조정</span></li>
+                  <li><strong>불량 추이</strong><span>현재 불량률 0.14%, 기준 이내 유지</span></li>
+                  <li><strong>출하 연계</strong><span>브라켓 성형품 완료 후 최종검사 이동 예정</span></li>
+                </ul>
+              </section>
+            </aside>
+          </section>
         </section>
-        <time id="clockText">--:--:--</time>
-        <section class="action-grid">
-          <button class="action-button start" type="button">작업시작</button>
-          <button class="action-button pause" type="button">일시정지</button>
-          <button class="action-button finish" type="button">실적등록</button>
-          <button class="action-button defect" type="button">불량등록</button>
-        </section>
-      </footer>
+      </section>
     </main>
 
-    <script src="./operator.js"></script>
-    <script src="./process-select.js"></script>
+    <script>
+      const todayText = document.querySelector("#todayText");
+      const weekday = ["일", "월", "화", "수", "목", "금", "토"];
+      const now = new Date();
+      todayText.textContent = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")} (${weekday[now.getDay()]})`;
+    </script>
   </body>
 </html>
-
 

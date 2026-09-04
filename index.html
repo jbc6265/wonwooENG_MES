@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>원우ENG MES POP - 공정 선택</title>
+    <title>원우ENG MES - 화면 선택</title>
     <link rel="stylesheet" href="./process-select.css" />
     <link rel="stylesheet" href="./operator.css" />
   </head>
@@ -13,14 +13,14 @@
         <div class="company-brand">
           <img class="company-ci" src="./assets/wonwoo-ci.jpg" alt="원우ENG CI" />
         </div>
-        <h1>원우ENG MES POP</h1>
+        <h1>원우ENG MES</h1>
         <div class="header-info">
           <span id="todayText">오늘 날짜</span><i aria-hidden="true"></i><span>작업자&nbsp; <b data-operator-name>조병철</b></span>
         </div>
       </header>
 
       <section class="process-content" aria-labelledby="processTitle">
-        <h2 id="processTitle">작업할 공정을 선택하세요.</h2>
+        <h2 id="processTitle">작업 또는 관리 화면을 선택하세요.</h2>
         <div class="process-grid">
           <a class="process-card inspection-card" href="./final-inspection.html">
             <span class="process-icon" aria-hidden="true">
@@ -44,15 +44,15 @@
               <svg viewBox="0 0 64 64"><path d="M18 14h28v11H18zM23 25v10M41 25v10M16 35h32v12H16zM20 47v7M44 47v7M26 41h12" /></svg>
             </span>
             <strong>프레스 공정</strong>
-            <span class="process-description">성형·타발 실적 관리</span>
-            <span class="select-action">선택하기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg></span>
+            <span class="process-description">관리자 MES 화면</span>
+            <span class="select-action">관리하기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg></span>
           </a>
         </div>
       </section>
 
       <footer class="system-strip">
         <div class="guide-icon" aria-hidden="true">i</div>
-        <strong>원하는 공정을 선택하여 작업을 시작하세요.</strong>
+        <strong>원하는 작업 또는 관리 화면을 선택하세요.</strong>
         <div class="system-status"><span aria-hidden="true">✓</span> 시스템 정상</div>
         <time id="clockText">--:--:--</time>
       </footer>
@@ -61,5 +61,4 @@
     <script src="./process-select.js"></script>
   </body>
 </html>
-
 
